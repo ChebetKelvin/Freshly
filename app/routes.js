@@ -22,4 +22,7 @@ export default [
   route("profile", "routes/profile.jsx"),
   route("contact", "routes/contact.jsx"),
   route("about", "routes/about.jsx"),
+  route("mpesa", "routes/pesa.jsx"),
+  route("payment-status", "routes/payment-status.jsx"),
+  route("success", "routes/success.jsx"),
 ];

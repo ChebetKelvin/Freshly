@@ -1,9 +1,15 @@
 import { Form, useLoaderData, useActionData, redirect } from "react-router";
 import { useState } from "react";
-import { getSession, commitSession, setErrorMessage } from "../.server/session";
+import {
+  getSession,
+  commitSession,
+  setErrorMessage,
+  setSuccessMessage,
+} from "../.server/session";
 import { getProducts } from "../models/products";
 import { createOrder } from "../models/order";
 import { getOrdersByUser } from "../models/order";
+import { stkPush, normalizePhone } from "../.server/stkPush"; //
 
 // ---------- ACTION ----------
 export async function action({ request }) {
@@ -20,7 +26,7 @@ export async function action({ request }) {
   const postalCode = formData.get("postalCode")?.trim();
   const country = formData.get("country")?.trim();
   const paymentMethod = formData.get("paymentMethod");
-  const phoneNumber = formData.get("phoneNumber")?.trim();
+  const phoneNumber = normalizePhone(formData.get("phoneNumber")?.trim());
 
   const errors = {};
   if (!name) errors.name = "Name is required.";
@@ -45,7 +51,65 @@ export async function action({ request }) {
     });
   }
 
-  // Create order (no payment integration yet)
+  // ✅ PAYMENT SECTION
+
+  let checkoutId = null;
+
+  if (paymentMethod === "mobile") {
+    const safResponse = await stkPush({
+      phone: phoneNumber,
+      amount: total,
+      orderData: {
+        user: user.id,
+        items: cartProducts.map((p) => ({
+          product: p._id,
+          name: p.name,
+          quantity: p.quantity,
+          price: p.price,
+          subtotal: p.price * p.quantity,
+          image: p.imageUrl || null,
+        })),
+        totalPrice: total,
+        paymentMethod,
+        shippingAddress: {
+          name,
+          email,
+          address,
+          city,
+          postalCode,
+          country,
+          phoneNumber,
+        },
+        createdAt: new Date(),
+      },
+    });
+
+    if (safResponse.error) {
+      setErrorMessage(session, safResponse.error);
+      return redirect("/checkout", {
+        headers: { "Set-Cookie": await commitSession(session) },
+      });
+    }
+
+    if (!safResponse.CheckoutRequestID) {
+      setErrorMessage(session, "Failed to initiate payment.");
+      return redirect("/checkout", {
+        headers: { "Set-Cookie": await commitSession(session) },
+      });
+    }
+
+    checkoutId = safResponse.CheckoutRequestID;
+
+    setSuccessMessage(
+      session,
+      "Please complete payment on your phone. Your order will be created once payment is confirmed."
+    );
+    return redirect("/checkout", {
+      headers: { "Set-Cookie": await commitSession(session) },
+    });
+  }
+
+  // ✅ CREATE ORDER (for non-mobile payments)
   const orderData = {
     user: user.id,
     items: cartProducts.map((p) => ({
@@ -54,11 +118,12 @@ export async function action({ request }) {
       quantity: p.quantity,
       price: p.price,
       subtotal: p.price * p.quantity,
-      imageUrl: p.imageUrl || null,
+      image: p.imageUrl || null,
     })),
     totalPrice: total,
     status: "pending",
     paymentMethod,
+    paymentId: checkoutId || null,
     shippingAddress: {
       name,
       email,
@@ -289,8 +354,10 @@ export default function CheckoutPage() {
             <h3 className="text-xl font-semibold text-gray-700 mt-8 mb-4 border-t pt-6">
               Payment Method
             </h3>
-            <div className="flex gap-8">
-              <label className="flex items-center gap-3 cursor-pointer p-3 border border-gray-200 rounded-lg shadow-sm hover:bg-green-50 transition-colors">
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* M-Pesa Option */}
+              <label className="flex items-center gap-3 cursor-pointer p-3 border border-gray-200 rounded-lg shadow-sm hover:bg-green-50 transition">
                 <input
                   type="radio"
                   name="paymentMethod"
@@ -303,9 +370,24 @@ export default function CheckoutPage() {
                   M-Pesa (Mobile Payment)
                 </span>
               </label>
-              {/* You can add more payment methods here */}
+
+              {/* Cash on Delivery Option */}
+              <label className="flex items-center gap-3 cursor-pointer p-3 border border-gray-200 rounded-lg shadow-sm hover:bg-green-50 transition">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="cod"
+                  checked={method === "cod"}
+                  onChange={() => setMethod("cod")}
+                  className="form-radio h-5 w-5 text-green-600 border-gray-300 focus:ring-green-500"
+                />
+                <span className="text-gray-800 font-medium">
+                  Cash on Delivery
+                </span>
+              </label>
             </div>
 
+            {/* Phone number only shown for M-Pesa */}
             {method === "mobile" && (
               <div className="w-full mt-6">
                 <label

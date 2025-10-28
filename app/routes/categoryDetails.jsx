@@ -130,7 +130,7 @@ function ProductCard({ id, name, category, price, image }) {
           </h2>
         </Link>
         <p className="text-sm text-gray-500">{category}</p>
-        <p className="text-green-600 font-semibold mt-1">{price}</p>
+        <p className="text-green-600 font-semibold mt-1">ksh {price}</p>
       </div>
     </article>
   );
