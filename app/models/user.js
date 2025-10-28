@@ -26,3 +26,7 @@ export async function getUserById(id) {
 export async function updateUser(id, user) {
   return collection.updateOne({ _id: new ObjectId(id) }, { $set: user });
 }
+
+export async function deleteUser(id) {
+  return collection.deleteOne({ _id: new ObjectId(id) });
+}
