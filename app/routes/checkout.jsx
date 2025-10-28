@@ -80,8 +80,8 @@ export async function action({ request }) {
     });
   }
 
-  session.set("cartProducts", []);
-  session.set("total", 0);
+  session.set("cartItems", []);
+  session.unset("total");
 
   return redirect("/my-orders", {
     headers: { "Set-Cookie": await commitSession(session) },
@@ -110,8 +110,6 @@ export async function loader({ request }) {
     .filter(Boolean);
 
   const total = cartProducts.reduce((sum, i) => sum + i.subtotal, 0);
-  session.set("cartProducts", cartProducts);
-  session.set("total", total);
 
   const orders = await getOrdersByUser(user.id);
   const lastAddress =
