@@ -1,13 +1,30 @@
 import {
+  Form,
+  data,
   isRouteErrorResponse,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  Link,
+  NavLink,
 } from "react-router";
 
 import "./app.css";
+import { useState, useEffect } from "react";
+import { useLoaderData } from "react-router";
+import { Toaster, toast } from "react-hot-toast";
+
+import {
+  FaShoppingCart,
+  FaBars,
+  FaTimes,
+  FaUser,
+  FaSearch,
+} from "react-icons/fa";
+import Footer from "./components/Footer";
+import { getSession, commitSession } from "./.server/session";
 
 export const links = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -22,7 +39,51 @@ export const links = () => [
   },
 ];
 
+export async function loader({ request }) {
+  let session = await getSession(request.headers.get("Cookie"));
+  let cartItems = session.get("cartItems") || [];
+  let toastMessage = session.get("toastMessage");
+  let user = session.get("user");
+
+  return data(
+    { cartItems, toastMessage, user },
+    {
+      headers: {
+        "Set-Cookie": await commitSession(session),
+      },
+    }
+  );
+}
+
 export function Layout({ children }) {
+  let { cartItems, toastMessage, user } = useLoaderData();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    if (!toastMessage) {
+      return;
+    }
+    let { message, type } = toastMessage;
+
+    switch (type) {
+      case "success":
+        toast.success(message);
+        break;
+      case "error":
+        toast.error(message);
+        break;
+      default:
+        throw new Error(`${type} is not handled`);
+    }
+  }, [toastMessage]);
+
+  const navLinks = [
+    { to: "/", label: "Home" },
+    { to: "/products", label: "Products" },
+    { to: "/contact", label: "Contact" },
+  ];
+
   return (
     <html lang="en">
       <head>
@@ -32,7 +93,209 @@ export function Layout({ children }) {
         <Links />
       </head>
       <body>
+        {/* Navbar Section */}
+        <nav className="bg-white/90 backdrop-blur-sm sticky top-0 w-full z-50 shadow-sm">
+          <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-3">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2">
+              <img
+                src="/freshly-logo.png"
+                alt="Freshly Logo"
+                className="w-8 h-8 rounded-full"
+              />
+              <span className="text-xl font-bold text-green-600">Freshly</span>
+            </Link>
+
+            {/* Desktop Search */}
+            <Form method="get" action="/products" className="relative">
+              <input
+                type="text"
+                name="search"
+                placeholder="Search products..."
+                className="bg-neutral-800 text-white placeholder-green-400 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+              <button
+                type="submit"
+                className="absolute right-1 top-1/2 -translate-y-1/2 bg-green-500 hover:bg-green-600 px-3 py-1 rounded-lg text-white font-semibold"
+              >
+                Go
+              </button>
+            </Form>
+
+            {/* Desktop Nav Links */}
+            <div className="hidden md:flex items-center gap-6">
+              {navLinks.map((link) => (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  className={({ isActive }) =>
+                    `font-medium ${isActive ? "text-green-600" : "text-gray-700 hover:text-green-500"}`
+                  }
+                >
+                  {link.label}
+                </NavLink>
+              ))}
+
+              {/* Cart */}
+              <Link to="/cart" className="relative text-gray-700">
+                <FaShoppingCart size={22} />
+                {cartItems.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-green-600 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                    {cartItems.length}
+                  </span>
+                )}
+              </Link>
+
+              {/* User / Login */}
+              {user ? (
+                <div className="relative group">
+                  <button className="flex items-center gap-2 text-gray-700 focus:outline-none">
+                    <FaUser size={20} className="text-green-600" />
+                    <span className="font-medium">
+                      {user.name.split(" ")[0]}
+                    </span>
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  <div className="absolute right-0 mt-2 w-44 bg-white border rounded-xl shadow-lg opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transform transition-all duration-200">
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-t-xl"
+                    >
+                      Profile
+                    </Link>
+                    <Link
+                      to="/my-orders"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    >
+                      My Orders
+                    </Link>
+
+                    <Link
+                      to="/logout"
+                      className="block px-4 py-2 text-gray-700 hover:bg-red-600"
+                    >
+                      Logout
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  className="flex items-center gap-1 text-gray-700"
+                >
+                  <FaUser size={20} />
+                  <span className="font-medium">Login</span>
+                </Link>
+              )}
+            </div>
+
+            {/* Mobile Menu Toggle */}
+            <div className="flex md:hidden items-center gap-3">
+              <Link to="/cart" className="relative text-gray-700">
+                <FaShoppingCart size={22} />
+                {cartItems.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-green-600 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                    {cartItems.length}
+                  </span>
+                )}
+              </Link>
+
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="text-gray-700 focus:outline-none"
+              >
+                {menuOpen ? <FaTimes size={22} /> : <FaBars size={22} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Dropdown */}
+          {menuOpen && (
+            <div className="md:hidden bg-white border-t shadow-md px-4 py-4">
+              <div className="flex flex-col gap-4">
+                <Form
+                  method="get"
+                  action="/products"
+                  className="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-3 py-2 w-full max-w-md mx-auto shadow-sm focus-within:ring-2 focus-within:ring-green-500 transition duration-200"
+                >
+                  <FaSearch className="text-green-500 text-sm sm:text-base" />
+
+                  <input
+                    type="text"
+                    name="search" // make sure to match your loader param name
+                    placeholder="Search groceries..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="bg-transparent outline-none text-gray-700 placeholder-gray-400 text-sm sm:text-base w-full"
+                  />
+
+                  {/* Optional button for small screens */}
+                  <button
+                    type="submit"
+                    className="hidden sm:block bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-3 py-1.5 rounded-full transition"
+                  >
+                    Go
+                  </button>
+                </Form>
+
+                {navLinks.map((link) => (
+                  <NavLink
+                    key={link.to}
+                    to={link.to}
+                    className={({ isActive }) =>
+                      `font-medium ${isActive ? "text-green-600" : "text-gray-700 hover:text-green-500"}`
+                    }
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {link.label}
+                  </NavLink>
+                ))}
+
+                {user ? (
+                  <>
+                    <Link
+                      to="/profile"
+                      className="text-gray-700 hover:text-green-500"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      Profile
+                    </Link>
+                    <Link
+                      to="/orders"
+                      className="text-gray-700 hover:text-green-500"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      My Orders
+                    </Link>
+                    <Form method="post" action="/logout">
+                      <button
+                        type="submit"
+                        className="text-left w-full text-red-600 hover:text-red-700"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Logout
+                      </button>
+                    </Form>
+                  </>
+                ) : (
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-1 text-gray-700"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    <FaUser size={20} />
+                    <span className="font-medium">Login</span>
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
+        </nav>
+
         {children}
+        <Toaster />
+        <Footer />
         <ScrollRestoration />
         <Scripts />
       </body>
