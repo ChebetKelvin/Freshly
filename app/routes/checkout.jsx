@@ -9,7 +9,7 @@ import {
 import { getProducts } from "../models/products";
 import { createOrder } from "../models/order";
 import { getOrdersByUser } from "../models/order";
-import { stkPush, normalizePhone } from "../.server/stkPush"; //
+import { stkPush, normalizePhone } from "../.server/stkPush";
 
 // ---------- ACTION ----------
 export async function action({ request }) {
@@ -37,8 +37,24 @@ export async function action({ request }) {
   if (!country) errors.country = "Country is required.";
   if (!paymentMethod) errors.paymentMethod = "Select a payment method.";
 
-  const cartProducts = session.get("cartProducts") || [];
-  const total = session.get("total") || 0;
+  // ✅ Get cart data from session (minimal data)
+  const cartItems = session.get("cartItems") || [];
+  const products = await getProducts();
+
+  // Calculate cart products and total on the fly
+  const cartProducts = cartItems
+    .map((item) => {
+      const product = products.find((p) => p._id.toString() === item.id);
+      if (!product) return null;
+      return {
+        ...product,
+        quantity: item.quantity,
+        subtotal: product.price * item.quantity,
+      };
+    })
+    .filter(Boolean);
+
+  const total = cartProducts.reduce((sum, item) => sum + item.subtotal, 0);
 
   if (Object.keys(errors).length > 0) {
     return { errors };
@@ -52,7 +68,6 @@ export async function action({ request }) {
   }
 
   // ✅ PAYMENT SECTION
-
   let checkoutId = null;
 
   if (paymentMethod === "mobile") {
@@ -145,9 +160,10 @@ export async function action({ request }) {
     });
   }
 
+  // ✅ Clear only cart items from session
   session.set("cartItems", []);
-  session.unset("total");
 
+  setSuccessMessage(session, "Order placed successfully!");
   return redirect("/my-orders", {
     headers: { "Set-Cookie": await commitSession(session) },
   });
@@ -183,8 +199,7 @@ export async function loader({ request }) {
           .shippingAddress
       : null;
 
-  console.log({ cartProducts });
-
+  // ✅ Return data WITHOUT storing in session
   return { user, cartProducts, total, lastAddress };
 }
 
@@ -202,7 +217,7 @@ export default function CheckoutPage() {
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* Billing Form (Two-thirds width on large screens) */}
+          {/* Billing Form */}
           <Form
             method="post"
             className="lg:col-span-2 bg-white shadow-2xl rounded-xl p-6 sm:p-10 border border-gray-100"
@@ -229,7 +244,6 @@ export default function CheckoutPage() {
                   type="text"
                   id="name"
                   defaultValue={user.name}
-                  // CLEAN DESIGN: Standard padded input with rounded corners and focus ring
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 text-black"
                 />
                 {actionData?.errors?.name && (
@@ -414,7 +428,7 @@ export default function CheckoutPage() {
             </button>
           </Form>
 
-          {/* Order Summary (One-third width on large screens) */}
+          {/* Order Summary */}
           <div className="lg:col-span-1 bg-white shadow-2xl rounded-xl p-6 sm:p-8 border border-gray-100 h-fit sticky top-8">
             <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-3">
               Your Order 🛒

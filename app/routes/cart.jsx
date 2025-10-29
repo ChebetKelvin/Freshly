@@ -33,11 +33,11 @@ export async function loader({ request }) {
   // Calculate total
   let total = cartProducts.reduce((sum, item) => sum + item.subtotal, 0);
 
-  // Save to session
-  session.set("cartProducts", cartProducts);
-  session.set("total", total);
+  // ❌ REMOVE THESE LINES - Don't store large data in session
+  // session.set("cartProducts", cartProducts);
+  // session.set("total", total);
 
-  // Return data with updated session cookie
+  // ✅ Return data WITHOUT storing large objects in session
   return data(
     { cartProducts, total },
     {
@@ -79,7 +79,7 @@ export async function action({ request }) {
   );
 }
 
-// Cart Page
+// Cart Page - Component remains the same
 export default function Cart({ loaderData }) {
   const { cartProducts, total } = loaderData;
 
@@ -95,7 +95,7 @@ export default function Cart({ loaderData }) {
         </span>
       </div>
 
-      {/* Empty Cart - Remains similar, but with updated styling for consistency */}
+      {/* Empty Cart */}
       {cartProducts.length === 0 && (
         <div className="mt-16 flex flex-col items-center gap-6 p-10 bg-gray-50 rounded-xl">
           <EmptyIcon className="w-36 h-36 text-[#e32225]/50" />
@@ -112,16 +112,15 @@ export default function Cart({ loaderData }) {
         </div>
       )}
 
-      {/* Cart Items and Summary - Two-Column Layout for modern design */}
+      {/* Cart Items and Summary */}
       {cartProducts.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* Left Column: Cart Items (Takes 2/3 of the space on large screens) */}
+          {/* Left Column: Cart Items */}
           <section className="lg:col-span-2">
             <h2 className="text-2xl font-semibold mb-6 text-gray-700 border-b pb-2">
               Review Your Order
             </h2>
             <ul className="flex flex-col gap-6 divide-y divide-gray-100">
-              {/* The CartItem component (list item) should be robust and styled for this new section */}
               {cartProducts.map((item) => (
                 <li key={item._id} className="pt-6 first:pt-0">
                   <CartItem {...item} />
@@ -129,7 +128,7 @@ export default function Cart({ loaderData }) {
               ))}
             </ul>
 
-            {/* Continue Shopping Button - Added for better user flow */}
+            {/* Continue Shopping Button */}
             <div className="mt-8 flex justify-start">
               <Link
                 to="/products"
@@ -152,7 +151,7 @@ export default function Cart({ loaderData }) {
             </div>
           </section>
 
-          {/* Right Column: Order Summary (Takes 1/3 of the space on large screens) */}
+          {/* Right Column: Order Summary */}
           <aside className="lg:col-span-1 bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-100 h-fit sticky top-28">
             <h2 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
               Order Summary
@@ -162,8 +161,7 @@ export default function Cart({ loaderData }) {
             <div className="space-y-4">
               <div className="flex justify-between text-lg text-gray-600">
                 <span>Subtotal ({cartProducts.length} items)</span>
-                <span>Ksh {total.toFixed(2)}</span>{" "}
-                {/* Assuming 'total' here acts as a subtotal */}
+                <span>Ksh {total.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-lg text-gray-600">
                 <span>Shipping Estimate</span>
@@ -196,22 +194,19 @@ export default function Cart({ loaderData }) {
   );
 }
 
-// Cart Item Component
+// Cart Item Component - remains the same
 function CartItem({ name, image, quantity, _id, price, subtotal }) {
-  const imageSrc = image; // adjust to match your product field
+  const imageSrc = image;
 
   return (
     <div className="flex flex-col gap-4 py-6 border-b border-gray-100 last:border-b-0 sm:flex-row sm:gap-6 sm:items-start sm:justify-between">
-      {/* Section 1: Product Image and Details (ALWAYS TOP LEFT) */}
+      {/* Section 1: Product Image and Details */}
       <div className="flex items-start gap-4 flex-1 min-w-0">
-        {/* Product Image - Adjusted size for better mobile fit */}
         <img
           src={imageSrc}
           alt={`Image of ${name}`}
           className="rounded-lg w-24 h-24 object-cover shadow-md sm:w-28 sm:h-28"
         />
-
-        {/* Product Name and Price */}
         <div className="flex flex-col pt-1">
           <h2 className="text-lg font-semibold text-gray-900 line-clamp-2 sm:text-xl">
             {name}
@@ -223,11 +218,9 @@ function CartItem({ name, image, quantity, _id, price, subtotal }) {
         </div>
       </div>
 
-      {/* NEW Section 2: Controls and Subtotal (STACKS BELOW DETAILS ON MOBILE) */}
-      {/* On mobile, this div is full width and contains controls and total. */}
-      {/* On sm+, it's a sibling of Section 1, allowing for horizontal layout. */}
+      {/* Section 2: Controls and Subtotal */}
       <div className="flex w-full justify-between items-center pl-28 sm:pl-0 sm:w-auto sm:flex-row sm:items-center sm:gap-12 sm:mt-0">
-        {/* Quantity Controls (Left side of new mobile row) */}
+        {/* Quantity Controls */}
         <div className="min-w-[120px]">
           <Form
             method="post"
@@ -236,7 +229,6 @@ function CartItem({ name, image, quantity, _id, price, subtotal }) {
             <input type="hidden" name="id" value={_id} />
             <input type="hidden" name="_action" value="alter_quantity" />
 
-            {/* Decrement Button */}
             <button
               name="quantity"
               value={Math.max(Number(quantity) - 1, 0)}
@@ -245,12 +237,10 @@ function CartItem({ name, image, quantity, _id, price, subtotal }) {
               <FaMinus className="w-3 h-3" />
             </button>
 
-            {/* Quantity Display */}
             <span className="text-gray-900 font-bold w-6 text-center">
               {quantity}
             </span>
 
-            {/* Increment Button */}
             <button
               name="quantity"
               value={Number(quantity) + 1}
@@ -261,14 +251,12 @@ function CartItem({ name, image, quantity, _id, price, subtotal }) {
           </Form>
         </div>
 
-        {/* Subtotal and Remove Button (Right side of new mobile row) */}
+        {/* Subtotal and Remove Button */}
         <div className="flex items-center gap-4 sm:flex-col sm:items-end sm:gap-2">
-          {/* Item Subtotal */}
           <p className="text-xl font-bold text-gray-900 min-w-[100px] text-right">
             Ksh{subtotal.toFixed(2)}
           </p>
 
-          {/* Remove Button */}
           <Form method="post">
             <input type="hidden" name="_action" value="remove_item" />
             <input type="hidden" name="id" value={_id} />
