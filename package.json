@@ -5,9 +5,10 @@
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
-    "start": "react-router-serve ./build/server/index.js"
+    "start": "node ./build/server/index.js"
   },
   "dependencies": {
+    "@mjackson/node-fetch-server": "^0.7.0",
     "@react-router/node": "^7.9.2",
     "@react-router/serve": "^7.9.2",
     "bcryptjs": "^3.0.2",
