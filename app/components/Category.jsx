@@ -37,7 +37,7 @@ export default function CategorySection() {
       "https://images.unsplash.com/photo-1581006855389-c17d881f3baf?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=400&h=300",
     Spices:
       "https://images.unsplash.com/photo-1615485500704-8e990f9900f7?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=400&h=300",
-    Meat: "https://images.unsplash.com/photo-1603052875000-2c8f1b3d4c5e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=400&h=300",
+    Meat: "https://images.unsplash.com/photo-1723893905879-0e309c2a8e06?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8bWVhdHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=600",
     Default:
       "https://images.unsplash.com/photo-1723893905879-0e309c2a8e06?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8bWVhdHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=600",
   };
