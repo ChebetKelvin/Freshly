@@ -25,4 +25,9 @@ export default [
   route("mpesa", "routes/pesa.jsx"),
   route("payment-status", "routes/payment-status.jsx"),
   route("success", "routes/success.jsx"),
+  route("blog", "routes/blog.jsx"),
+  route("blog/:id", "routes/blogDetails.jsx"),
+  route("faq", "routes/faq.jsx"),
+  route("shipping", "routes/shipping.jsx"),
+  route("returns", "routes/return.jsx"),
 ];

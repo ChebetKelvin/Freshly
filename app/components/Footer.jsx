@@ -65,11 +65,6 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/careers" className="hover:text-green-400 transition">
-                  Careers
-                </Link>
-              </li>
-              <li>
                 <Link to="/contact" className="hover:text-green-400 transition">
                   Contact
                 </Link>
@@ -101,11 +96,6 @@ export default function Footer() {
                   Returns Policy
                 </Link>
               </li>
-              <li>
-                <Link to="/support" className="hover:text-green-400 transition">
-                  Customer Support
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -119,7 +109,7 @@ export default function Footer() {
                 href="tel:+254700123456"
                 className="flex items-center gap-3 text-gray-400 hover:text-green-400 transition"
               >
-                <FaPhoneAlt className="text-green-500" /> +254 700 123 456
+                <FaPhoneAlt className="text-green-500" /> +254 792 582 541
               </a>
               <a
                 href="mailto:support@freshmart.co.ke"
@@ -129,32 +119,6 @@ export default function Footer() {
                 support@freshmart.co.ke
               </a>
             </div>
-          </div>
-        </div>
-
-        {/* Newsletter Section */}
-        <div className="mt-16 pt-8 border-t border-gray-800">
-          <div className="max-w-2xl mx-auto text-center">
-            <h3 className="text-xl font-bold text-white mb-3">
-              Join Our Newsletter for 10% Off!
-            </h3>
-            <p className="text-sm text-gray-400 mb-6">
-              Get weekly updates on fresh arrivals and exclusive discounts.
-            </p>
-            <form className="flex flex-col sm:flex-row w-full max-w-md mx-auto rounded-xl shadow-lg overflow-hidden border border-gray-700">
-              <input
-                type="email"
-                placeholder="Your email address"
-                className="flex-1 bg-gray-800/80 px-5 py-3 text-base text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500"
-                aria-label="Email address"
-              />
-              <button
-                type="submit"
-                className="mt-3 sm:mt-0 sm:ml-3 bg-green-600 hover:bg-green-700 px-6 py-3 text-white font-bold transition duration-300 transform hover:scale-105"
-              >
-                Sign Up
-              </button>
-            </form>
           </div>
         </div>
 
@@ -172,11 +136,14 @@ export default function Footer() {
           </p>
           <div className="flex flex-wrap justify-center gap-4 mt-4">
             <img
-              src="https://placehold.co/60x20/10B981/ffffff?text=VISA"
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMPGxi5WoE0uLWHpT-C-km3qDaueN7WpTVlQ&s"
               alt="Mpesa"
               className="h-5 opacity-80"
             />
           </div>
+          <p className="pt-2 font-semibold text-gray-200">
+            Designed by kelvin chebet
+          </p>
         </div>
       </div>
     </footer>

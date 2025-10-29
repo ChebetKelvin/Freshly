@@ -106,20 +106,21 @@ export function Layout({ children }) {
               <span className="text-xl font-bold text-green-600">Freshly</span>
             </Link>
 
-            {/* Desktop Search */}
-            <Form method="get" action="/products" className="relative">
+            {/* Desktop Search Bar */}
+            <Form
+              method="get"
+              action="/products"
+              className="hidden md:flex items-center gap-2 bg-white border border-gray-200 rounded-full px-3 py-2 w-full max-w-md lg:max-w-lg shadow-sm focus-within:ring-2 focus-within:ring-green-500 transition duration-200"
+            >
+              <FaSearch className="text-green-500 text-sm md:text-lg" />
               <input
                 type="text"
                 name="search"
-                placeholder="Search products..."
-                className="bg-neutral-800 text-white placeholder-green-400 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Search groceries..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="bg-transparent outline-none text-gray-700 placeholder-gray-400 text-sm md:text-base w-full"
               />
-              <button
-                type="submit"
-                className="absolute right-1 top-1/2 -translate-y-1/2 bg-green-500 hover:bg-green-600 px-3 py-1 rounded-lg text-white font-semibold"
-              >
-                Go
-              </button>
             </Form>
 
             {/* Desktop Nav Links */}
@@ -229,14 +230,6 @@ export function Layout({ children }) {
                     onChange={(e) => setSearch(e.target.value)}
                     className="bg-transparent outline-none text-gray-700 placeholder-gray-400 text-sm sm:text-base w-full"
                   />
-
-                  {/* Optional button for small screens */}
-                  <button
-                    type="submit"
-                    className="hidden sm:block bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-3 py-1.5 rounded-full transition"
-                  >
-                    Go
-                  </button>
                 </Form>
 
                 {navLinks.map((link) => (
