@@ -47,13 +47,11 @@ export async function action({ request }) {
     });
   }
 
-  // ✅ Add user to session
-  session.set("user", {
-    id: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-  });
+  // ✅ Store ONLY essential user data in session (reduced size)
+  session.set("userId", user._id.toString()); // Store only ID as string
+  session.set("userRole", user.role);
+  // Remove name and email from session to save space
+  // You can fetch these from database when needed
 
   setSuccessMessage(session, `Welcome back, ${user.name}!`);
 
@@ -64,6 +62,7 @@ export async function action({ request }) {
   });
 }
 
+// Rest of your component remains the same...
 export default function Login() {
   const actionData = useActionData();
   const fieldErrors = actionData?.fieldErrors || {};
@@ -145,7 +144,7 @@ export default function Login() {
         </Form>
 
         <p className="text-center text-gray-900 text-sm mt-6">
-          Don’t have an account?{" "}
+          Don't have an account?{" "}
           <Link
             to="/register"
             className="text-green-600 font-semibold hover:underline"
